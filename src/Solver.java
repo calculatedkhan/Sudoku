@@ -1,4 +1,6 @@
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 public class Solver {
 
     Board board;
@@ -51,29 +53,45 @@ public class Solver {
         return false;
     }
 
-    private boolean solveBoard() {
-        //For every position in the puzzle
-        for (int row = 0; row < 9; row++) {
-            for (int col = 0; col < 9; col++) {
-                //If it has no value, represented by 0
-                if (board.getValue(row, col) == 0) {
-                    //Check every possibility for that position, taking the first one that works
-                    for (int i = 1; i <= 9; i++) {
-                        //Check if its possible, against row, column and square
-                        if (isPossible(row, col, i)) {
-                            board.setValue(row, col, i); //set that position to the first possible number
+    public boolean solveBoard() {
+        return solveBoardWithThreadPool();
+    }
 
-                            if (solveBoard()) { //recursively call itself with new state
-                                return true;
-                            }
+    private boolean solveBoardWithThreadPool() {
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-                            board.setValue(row, col, 0); //resets value to 0 if given state was impossible
-                        }
-                    }
-                    return false; // if no number works returns false, and jumps back a state to previous correct state
+        try {
+            return solveCell(0, 0, executor);
+        } finally {
+            executor.shutdown();
+        }
+    }
+
+    private boolean solveCell(int row, int col, ExecutorService executor) {
+        if (row == 9) {
+            return true; // Puzzle solved
+        }
+
+        if (col == 9) {
+            return solveCell(row + 1, 0, executor); // Move to next row
+        }
+
+        if (board.getValue(row, col) != 0) {
+            return solveCell(row, col + 1, executor); // Cell already filled, move to next column
+        }
+
+        for (int i = 1; i <= 9; i++) {
+            if (isPossible(row, col, i)) {
+                board.setValue(row, col, i);
+
+                if (solveCell(row, col + 1, executor)) {
+                    return true;
                 }
+
+                board.setValue(row, col, 0); // Backtrack
             }
         }
-        return true; //once solved returns true
+
+        return false; // No valid number found for this cell
     }
 }
