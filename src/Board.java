@@ -15,6 +15,7 @@ class Board {
 //            {2, 0, 1, 0, 4, 0, 0, 0, 6}
 //    };
 
+
     int[][] board;
 
     public Board(int[][] board) {

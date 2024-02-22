@@ -1,6 +1,8 @@
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+
+
 public class Solver {
 
     Board board;
@@ -8,16 +10,6 @@ public class Solver {
     public Solver(Board board) {
         this.board = board;
     }
-
-    public void solve() {
-        if (solveBoard()) {
-            System.out.println("Its been solved: ");
-            board.printBoard();
-        } else {
-            System.out.println("No solution exists.");
-        }
-    }
-
     private boolean isPossible(int currentRow, int currentCol, int numberToCheck) {
         return !checkRow(currentRow, numberToCheck) && !checkCol(currentCol, numberToCheck) && !checkSquare(currentRow, currentCol, numberToCheck);
     }
@@ -53,15 +45,45 @@ public class Solver {
         return false;
     }
 
-    public boolean solveBoard() {
-        return solveBoardWithThreadPool();
+    public void returnBoard() {
+        board.printBoard();
+    }
+    public void solveBoard() {
+        if (solveBoardWithThreadPool()) {
+            System.out.println("The board has at least 1 solution");
+        } else {
+            System.out.println("The Board has no solutions.");
+        }
     }
 
+//    private boolean solveBoardWithThreadPool() {
+//        ExecutorService executor = Executors.newFixedThreadPool(9);
+//
+//        try {
+//            return solveCell(0, 0, executor);
+//        } finally {
+//            executor.shutdown();
+//        }
+//    }
+
     private boolean solveBoardWithThreadPool() {
-        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        ExecutorService executor = Executors.newFixedThreadPool(10);
 
         try {
-            return solveCell(0, 0, executor);
+            List<Callable<Boolean>> tasks = new ArrayList<>();
+            tasks.add(() -> solveCell(0, 0, executor));
+            List<Future<Boolean>> results = executor.invokeAll(tasks);
+
+            // Check if all tasks have completed successfully
+            for (Future<Boolean> result : results) {
+                if (!result.get()) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return false;
         } finally {
             executor.shutdown();
         }

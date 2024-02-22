@@ -1,10 +1,17 @@
 public class Main {
     public static void main(String[] args) {
-        GenerateBoard boardGenerator = new GenerateBoard();
+       // GenerateBoard boardGenerator = new GenerateBoard();
+//        int[][] initialBoard = boardGenerator.createBoard();
+//        Board sudokuBoard = new Board(initialBoard);
+//        Solver solver = new Solver(sudokuBoard);
+//        solver.solveBoard();
+//        solver.returnBoard();
+
         long totalTime = 0; // Variable to accumulate total time
 
         // Run the algorithm 50 times
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 1; i++) {
+            GenerateBoard boardGenerator = new GenerateBoard();
             int[][] initialBoard = boardGenerator.createBoard();
             Board sudokuBoard = new Board(initialBoard);
 
@@ -12,7 +19,10 @@ public class Main {
             long startTime = System.nanoTime();
 
             Solver solver = new Solver(sudokuBoard);
+            //solver.returnBoard();
             solver.solveBoard();
+            solver.returnBoard();
+
 
             // End measuring time
             long endTime = System.nanoTime();
